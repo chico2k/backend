@@ -1,14 +1,4 @@
 {
-  "editor.formatOnSave": true,
-  "eslint.enable": true,
-  "eslint.workingDirectories": ["./frontend"],
-  "eslint.packageManager": "npm",
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
   "python.linting.pylintEnabled": false,
   "python.linting.flake8Enabled": true,
   "python.linting.enabled": true,
