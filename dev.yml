@@ -1,0 +1,62 @@
+version: "3.7"
+
+services:
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: ./config/Dockerfile.dev
+    volumes:
+      - /backend/config/
+      - ./backend/:/home/app
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env/.env.dev
+    command: >
+      sh -c "python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - db_dev
+      - elasticsearch
+    networks:
+      - ultigu
+  db_dev:
+    image: postgres:12.0-alpine
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data/
+    env_file:
+      - ./.env/.env.dev
+    networks:
+      - ultigu
+  smtp-server:
+    image: mailhog/mailhog
+    expose:
+      - 1025
+      - 8025
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - ultigu
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.1
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data_dev:/usr/share/elasticsearch/data
+    ports:
+      - 9300:9300
+      - 9200:9200
+    logging:
+      driver: none
+    networks:
+      - ultigu
+
+volumes:
+  postgres_data_dev:
+  elasticsearch_data_dev:
+
+networks:
+  ultigu:

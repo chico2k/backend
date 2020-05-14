@@ -1,0 +1,70 @@
+{
+    "AWSEBDockerrunVersion": 2,
+    "containerDefinitions": [
+        {
+            "mountPoints": [
+                {
+                    "containerPath": "/home/app/staticfiles",
+                    "sourceVolume": "Static_Volume"
+                }
+            ],
+            "name": "nginx",
+            "image":"chico2k/ultigu-nginx",
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "hostPort": 80
+                }
+            ],
+            "links" : [
+                "backend",
+                "frontend"
+            ],
+            "memoryReservation":128,
+            "hostname" : "nginx"
+            
+        },
+        {
+            "name": "backend",
+            "image":"chico2k/ultigu-backend",
+            "command": [
+                "gunicorn",
+                "main.wsgi:application",
+                "--bind",
+                "0.0.0.0:8000"
+            ],
+            "mountPoints": [
+                {
+                    "containerPath": "/home/app/staticfiles",
+                    "sourceVolume": "Static_Volume"
+                }
+            ],
+            "memoryReservation":128,
+            "hostname" : "backend",
+            "essential": false
+        },
+        {
+            "name": "frontend",
+            "image":"chico2k/ultigu-frontend",
+            "memoryReservation":128,
+            "hostname" : "frontend",
+            "essential": false
+        }
+    ],
+    "family": "",
+    "volumes": [
+        {
+            "host": {
+                "sourcePath": "static_volume"
+            },
+            "name": "Static_Volume"
+        },
+        {
+            "host": {
+                "sourcePath": "postgres_data"
+            },
+            "name": "Postgres_Data"
+        }
+    ]
+  }

@@ -1,0 +1,61 @@
+# pull official base image
+FROM python:3.8.0-alpine
+
+# ENV
+ENV APP_HOME=/home/app
+ENV ENTRYPOINT=entrypoint.dev.sh
+
+# set work directory
+WORKDIR $APP_HOME
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Install Dependencies
+RUN apk add --update --no-cache \
+    postgresql-client \
+    jpeg-dev gettext \
+    libmagic
+
+# Install Temp Dependencies
+RUN apk add --update --no-cache --virtual .tmp-build-deps \
+    gcc \
+    libc-dev \
+    linux-headers\
+    postgresql-dev \
+    musl-dev \
+    zlib \
+    zlib-dev
+
+# Copy 
+COPY ./requirements.txt /$APP_HOME/requirements.txt
+
+# install dependencies
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Remove Temp Dependencies
+RUN apk del .tmp-build-deps
+
+# create the app user
+RUN addgroup -S app && adduser -S app -G app
+
+# copy project
+COPY . .
+
+# chown all the files to the app user
+RUN chown -R app:app $APP_HOME
+
+# change to the app user
+USER app
+
+# Permission Entry point
+RUN chmod 755 /$APP_HOME/config/$ENTRYPOINT
+RUN chmod +x /$APP_HOME/config/$ENTRYPOINT
+
+# Expose Port
+EXPOSE 8000
+
+# run entrypoint.sh
+ENTRYPOINT ["/home/app/config/entrypoint.dev.sh"]
